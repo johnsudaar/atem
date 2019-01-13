@@ -34,6 +34,16 @@ func (c *AtemClient) listenSocket() {
 	// TODO: Better error handling
 	buffer := make([]byte, 1024)
 	for {
+
+		// Stopping mechanism
+		c.stopMutex.Lock()
+		stopping := c.stopping
+		c.stopMutex.Unlock()
+		if stopping != nil {
+			stopping <- true
+			return
+		}
+
 		n, err := c.conn.Read(buffer)
 		if err != nil {
 			panic(err)

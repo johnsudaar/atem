@@ -3,6 +3,7 @@ package atem
 import (
 	"fmt"
 	"net"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -24,9 +25,21 @@ type AtemClient struct {
 	atemAddr      string
 	localAddr     string
 	currentUid    uint16
+
+	tallyWriter TallyWriter
+	stopMutex   sync.Mutex
+	stopping    chan bool
 }
 
-func New(addr string, localPort string) (*AtemClient, error) {
+type ClientOpt func(*AtemClient)
+
+func WithTallyWriter(writer TallyWriter) ClientOpt {
+	return func(c *AtemClient) {
+		c.tallyWriter = writer
+	}
+}
+
+func New(addr string, localPort string, opts ...ClientOpt) (*AtemClient, error) {
 	atemAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -41,19 +54,40 @@ func New(addr string, localPort string) (*AtemClient, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	//conn.SetReadDeadline(1 * time.Second)
+
 	client := &AtemClient{
 		packetCounter: 0,
 		atemAddr:      addr,
 		localAddr:     fmt.Sprintf("0.0.0.0:%s", localPort),
 		conn:          conn,
 		currentUid:    0x4242,
+		stopping:      nil,
+	}
+
+	for _, opt := range opts {
+		opt(client)
 	}
 
 	err = client.connectToSwitcher()
 	if err != nil {
+		client.conn.Close()
 		return nil, errors.Wrap(err, "fail to send HELLO packet to switcher")
 	}
 
 	go client.listenSocket()
 	return client, nil
+}
+
+func (c *AtemClient) Close() error {
+	c.stopMutex.Lock()
+	c.stopping = make(chan bool)
+	c.stopMutex.Unlock()
+	<-c.stopping
+	err := c.conn.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }

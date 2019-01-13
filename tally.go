@@ -3,10 +3,42 @@ package atem
 
 import (
 	"encoding/binary"
-	"fmt"
 )
 
 type VideoSource uint16
+
+type TallyStatus struct {
+	Source  VideoSource
+	Program bool
+	Preview bool
+}
+
+func (t TallyStatus) String() string {
+	str := t.Source.String() + "\t"
+	if t.Program {
+		str += "PGM"
+	} else if t.Preview {
+		str += "PVW"
+	} else {
+		str += "OFF"
+	}
+	return str
+}
+
+type TallyStatuses []TallyStatus
+
+func (t TallyStatuses) String() string {
+	str := ""
+
+	for _, s := range t {
+		str += s.String() + "\n"
+	}
+	return str
+}
+
+type TallyWriter interface {
+	WriteTally(TallyStatuses)
+}
 
 const (
 	Input_1 VideoSource = iota
@@ -33,20 +65,17 @@ const (
 
 func (c *AtemClient) parseTallyByIndex(payload []byte) {
 	size := binary.BigEndian.Uint16(payload[6:8])
+
+	tallyStatuses := TallyStatuses{}
 	for i := uint16(0); i < size; i++ {
 		tally := payload[8+i]
-
-		if tally != 0 {
-
-			fmt.Println(VideoSource(i).String())
-		}
-
-		if tally%2 != 0 {
-			fmt.Println("PROGRAM")
-		}
-
-		if (tally>>1)%2 != 0 {
-			fmt.Println("PREVIEW")
-		}
+		tallyStatuses = append(tallyStatuses, TallyStatus{
+			Source:  VideoSource(i),
+			Program: tally%2 != 0,
+			Preview: (tally>>1)%2 != 0,
+		})
+	}
+	if c.tallyWriter != nil {
+		c.tallyWriter.WriteTally(tallyStatuses)
 	}
 }
