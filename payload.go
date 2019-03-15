@@ -7,6 +7,7 @@ import (
 
 const (
 	TallyByIndexCommand = "TlIn"
+	TallyChannelConfig  = "_TlC"
 )
 
 func (c *AtemClient) parsePayload(packet []byte) error {
@@ -27,6 +28,8 @@ func (c *AtemClient) parsePayload(packet []byte) error {
 		switch cmd {
 		case TallyByIndexCommand:
 			c.parseTallyByIndex(payload)
+		case TallyChannelConfig:
+			c.parseTallyChannelConfig(payload)
 		}
 	}
 

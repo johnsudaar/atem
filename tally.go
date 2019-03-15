@@ -79,3 +79,10 @@ func (c *AtemClient) parseTallyByIndex(payload []byte) {
 		c.tallyWriter.WriteTally(tallyStatuses)
 	}
 }
+
+func (c *AtemClient) parseTallyChannelConfig(payload []byte) {
+	count := payload[4]
+	c.configLock.Lock()
+	defer c.configLock.Unlock()
+	c.atemConfig.TallyChannels = int(count)
+}

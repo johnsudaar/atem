@@ -5,6 +5,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/phayes/freeport"
 	"github.com/pkg/errors"
 )
 
@@ -19,12 +20,19 @@ const (
 	PacketTypeAck        = 0x10
 )
 
+type ATEMConfig struct {
+	TallyChannels int
+}
+
 type AtemClient struct {
 	packetCounter uint16
 	conn          *net.UDPConn
 	atemAddr      string
 	localAddr     string
 	currentUid    uint16
+
+	configLock *sync.RWMutex
+	atemConfig ATEMConfig
 
 	tallyWriter TallyWriter
 	stopMutex   sync.Mutex
@@ -39,13 +47,18 @@ func WithTallyWriter(writer TallyWriter) ClientOpt {
 	}
 }
 
-func New(addr string, localPort string, opts ...ClientOpt) (*AtemClient, error) {
+func New(addr string, opts ...ClientOpt) (*AtemClient, error) {
+	localPort, err := freeport.GetFreePort()
+	if err != nil {
+		return nil, err
+	}
+
 	atemAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
 	}
 
-	localAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("0.0.0.0:%s", localPort))
+	localAddr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("0.0.0.0:%v", localPort))
 	if err != nil {
 		return nil, err
 	}
@@ -55,15 +68,14 @@ func New(addr string, localPort string, opts ...ClientOpt) (*AtemClient, error) 
 		return nil, err
 	}
 
-	//conn.SetReadDeadline(1 * time.Second)
-
 	client := &AtemClient{
 		packetCounter: 0,
 		atemAddr:      addr,
-		localAddr:     fmt.Sprintf("0.0.0.0:%s", localPort),
+		localAddr:     fmt.Sprintf("0.0.0.0:%v", localPort),
 		conn:          conn,
-		currentUid:    0x4242,
+		currentUid:    0x4243,
 		stopping:      nil,
+		configLock:    &sync.RWMutex{},
 	}
 
 	for _, opt := range opts {
