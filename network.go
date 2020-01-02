@@ -17,7 +17,7 @@ func (c *AtemClient) send(buffer io.Reader) error {
 }
 
 func (c *AtemClient) connectToSwitcher() error {
-	buff := bytes.NewBuffer(c.commandHeader(PacketTypeHello, 8, 0))
+	buff := bytes.NewBuffer(c.commandHeader(PacketTypeHello, 8, 0, false))
 
 	binary.Write(buff, binary.BigEndian, uint32(0x01000000))
 	binary.Write(buff, binary.BigEndian, uint32(0))
@@ -58,13 +58,14 @@ func (c *AtemClient) listenSocket() {
 		c.currentUid = header.UID
 
 		if (header.BitMask & PacketTypeHello) != 0 {
-			ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, 0x0))
+			ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, 0x0, true))
 			err := c.send(ackBuffer)
 			if err != nil {
 				panic(err)
 			}
-		} else if (header.BitMask & PacketTypeAckRequest) != 0 {
-			ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, header.PackageID))
+		} else if (header.BitMask & (PacketTypeAckRequest | PacketTypeResend)) != 0 {
+			c.remotePacketCounter = header.PackageID
+			ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, header.PackageID, true))
 			err := c.send(ackBuffer)
 			if err != nil {
 				panic(err)

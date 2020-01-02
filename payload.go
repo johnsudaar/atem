@@ -2,7 +2,6 @@ package atem
 
 import (
 	"encoding/binary"
-	"fmt"
 )
 
 const (
@@ -22,8 +21,6 @@ func (c *AtemClient) parsePayload(packet []byte) error {
 		cmd := string(payload[2:6])
 		offset += size
 		size = binary.BigEndian.Uint16(packet[offset : offset+2])
-
-		fmt.Println(cmd)
 
 		switch cmd {
 		case TallyByIndexCommand:

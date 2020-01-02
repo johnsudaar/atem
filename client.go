@@ -12,12 +12,12 @@ import (
 const (
 	HeaderSize uint16 = 0x0c
 
-	PacketTypeNoCommand  = 0x00
-	PacketTypeAckRequest = 0x01
-	PacketTypeHello      = 0x02
-	PacketTypeResend     = 0x04
-	PacketTypeUndefined  = 0x08
-	PacketTypeAck        = 0x10
+	PacketTypeNoCommand           = 0x00
+	PacketTypeAckRequest          = 0x01
+	PacketTypeHello               = 0x02
+	PacketTypeResend              = 0x04
+	PacketTypeCmdRequestNextAfter = 0x08
+	PacketTypeAck                 = 0x10
 )
 
 type ATEMConfig struct {
@@ -25,11 +25,12 @@ type ATEMConfig struct {
 }
 
 type AtemClient struct {
-	packetCounter uint16
-	conn          *net.UDPConn
-	atemAddr      string
-	localAddr     string
-	currentUid    uint16
+	localPacketCounter  uint16
+	remotePacketCounter uint16
+	conn                *net.UDPConn
+	atemAddr            string
+	localAddr           string
+	currentUid          uint16
 
 	configLock *sync.RWMutex
 	atemConfig ATEMConfig
@@ -69,13 +70,14 @@ func New(addr string, opts ...ClientOpt) (*AtemClient, error) {
 	}
 
 	client := &AtemClient{
-		packetCounter: 0,
-		atemAddr:      addr,
-		localAddr:     fmt.Sprintf("0.0.0.0:%v", localPort),
-		conn:          conn,
-		currentUid:    0x4243,
-		stopping:      nil,
-		configLock:    &sync.RWMutex{},
+		localPacketCounter:  0,
+		remotePacketCounter: 0,
+		atemAddr:            addr,
+		localAddr:           fmt.Sprintf("0.0.0.0:%v", localPort),
+		conn:                conn,
+		currentUid:          0x4243,
+		stopping:            nil,
+		configLock:          &sync.RWMutex{},
 	}
 
 	for _, opt := range opts {

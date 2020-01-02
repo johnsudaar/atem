@@ -43,12 +43,14 @@ func (h *header) MarshalBinary() (data []byte, err error) {
 	return buff.Bytes(), nil
 }
 
-func (c *AtemClient) commandHeader(bitmask, payloadSize, ackID uint16) []byte {
+func (c *AtemClient) commandHeader(bitmask, payloadSize, ackID uint16, useRemotePacketCounter bool) []byte {
 	packageID := uint16(0)
 
-	if bitmask&(PacketTypeHello|PacketTypeAck) != 0 {
-		c.packetCounter++
-		packageID = c.packetCounter
+	if useRemotePacketCounter {
+		packageID = c.remotePacketCounter
+	} else {
+		packageID = c.localPacketCounter
+		c.localPacketCounter++
 	}
 
 	h := &header{
