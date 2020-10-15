@@ -1,6 +1,7 @@
 package atem
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"sync"
@@ -48,7 +49,7 @@ func WithTallyWriter(writer TallyWriter) ClientOpt {
 	}
 }
 
-func New(addr string, opts ...ClientOpt) (*AtemClient, error) {
+func New(ctx context.Context, addr string, opts ...ClientOpt) (*AtemClient, error) {
 	localPort, err := freeport.GetFreePort()
 	if err != nil {
 		return nil, err
@@ -90,7 +91,7 @@ func New(addr string, opts ...ClientOpt) (*AtemClient, error) {
 		return nil, errors.Wrap(err, "fail to send HELLO packet to switcher")
 	}
 
-	go client.listenSocket()
+	go client.listenSocketLoop(ctx)
 	return client, nil
 }
 
