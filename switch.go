@@ -19,7 +19,7 @@ func (c *AtemClient) SetProgram(me MESource, source VideoSource) error {
 	binary.Write(buff, binary.BigEndian, uint8(me))
 	binary.Write(buff, binary.BigEndian, uint8(0x75))
 	binary.Write(buff, binary.BigEndian, 0x0)
-	binary.Write(buff, binary.BigEndian, source)
+	binary.Write(buff, binary.BigEndian, source+1)
 
 	cmd := c.commandBuffer([]byte("CPgI"), buff.Bytes())
 

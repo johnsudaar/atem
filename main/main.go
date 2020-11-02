@@ -25,7 +25,7 @@ func main() {
 	fmt.Println("Connected !")
 
 	for {
-		for i := 1; i <= 4; i++ {
+		for i := 0; i <= 3; i++ {
 			time.Sleep(1 * time.Second)
 			fmt.Println("SEND!!!")
 
