@@ -59,37 +59,36 @@ func (c *AtemClient) listenSocketLoop(ctx context.Context) {
 func (c *AtemClient) listenSocket() error {
 	// TODO: Better error handling
 	buffer := make([]byte, 1024)
-	for {
-		n, err := c.conn.Read(buffer)
+	n, err := c.conn.Read(buffer)
+	if err != nil {
+		return errors.Wrap(err, "fail to read socket")
+	}
+	packet := buffer[0:n]
+	header := new(header)
+	err = header.UnmarshalBinary(packet)
+	if err != nil {
+		return errors.Wrap(err, "fail to unmarshal packet")
+	}
+
+	c.currentUid = header.UID
+
+	if (header.BitMask & PacketTypeHello) != 0 {
+		ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, 0x0, true))
+		err := c.send(ackBuffer)
 		if err != nil {
-			return errors.Wrap(err, "fail to read socket")
+			return errors.Wrap(err, "fail to reply to hello packet")
 		}
-		packet := buffer[0:n]
-		header := new(header)
-		err = header.UnmarshalBinary(packet)
+	} else if (header.BitMask & (PacketTypeAckRequest | PacketTypeResend)) != 0 {
+		c.remotePacketCounter = header.PackageID
+		ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, header.PackageID, true))
+		err := c.send(ackBuffer)
 		if err != nil {
-			return errors.Wrap(err, "fail to unmarshal packet")
-		}
-
-		c.currentUid = header.UID
-
-		if (header.BitMask & PacketTypeHello) != 0 {
-			ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, 0x0, true))
-			err := c.send(ackBuffer)
-			if err != nil {
-				return errors.Wrap(err, "fail to reply to hello packet")
-			}
-		} else if (header.BitMask & (PacketTypeAckRequest | PacketTypeResend)) != 0 {
-			c.remotePacketCounter = header.PackageID
-			ackBuffer := bytes.NewBuffer(c.commandHeader(PacketTypeAck, 0, header.PackageID, true))
-			err := c.send(ackBuffer)
-			if err != nil {
-				return errors.Wrap(err, "fail to respond to ACK request")
-			}
-		}
-
-		if uint16(len(packet)) > (HeaderSize+2) && (header.BitMask&(PacketTypeHello|PacketTypeResend)) == 0 {
-			c.parsePayload(packet)
+			return errors.Wrap(err, "fail to respond to ACK request")
 		}
 	}
+
+	if uint16(len(packet)) > (HeaderSize+2) && (header.BitMask&(PacketTypeHello|PacketTypeResend)) == 0 {
+		c.parsePayload(packet)
+	}
+	return nil
 }
