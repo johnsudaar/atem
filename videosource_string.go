@@ -2,15 +2,60 @@
 
 package atem
 
-import "fmt"
+import "strconv"
 
-const _VideoSource_name = "Input_1Input_2Input_3Input_4Input_5Input_6Input_7Input_8Input_9Input_10Input_11Input_12Input_13Input_14Input_15Input_16Input_17Input_18Input_19Input_20"
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[Input_1-0]
+	_ = x[Input_2-1]
+	_ = x[Input_3-2]
+	_ = x[Input_4-3]
+	_ = x[Input_5-4]
+	_ = x[Input_6-5]
+	_ = x[Input_7-6]
+	_ = x[Input_8-7]
+	_ = x[Input_9-8]
+	_ = x[Input_10-9]
+	_ = x[Input_11-10]
+	_ = x[Input_12-11]
+	_ = x[Input_13-12]
+	_ = x[Input_14-13]
+	_ = x[Input_15-14]
+	_ = x[Input_16-15]
+	_ = x[Input_17-16]
+	_ = x[Input_18-17]
+	_ = x[Input_19-18]
+	_ = x[Input_20-19]
+	_ = x[Input_21-20]
+	_ = x[Input_22-21]
+	_ = x[Input_23-22]
+	_ = x[Input_24-23]
+	_ = x[Input_25-24]
+	_ = x[Input_26-25]
+	_ = x[Input_27-26]
+	_ = x[Input_28-27]
+	_ = x[Input_29-28]
+	_ = x[Input_30-29]
+	_ = x[Input_31-30]
+	_ = x[Input_32-31]
+	_ = x[Input_33-32]
+	_ = x[Input_34-33]
+	_ = x[Input_35-34]
+	_ = x[Input_36-35]
+	_ = x[Input_37-36]
+	_ = x[Input_38-37]
+	_ = x[Input_39-38]
+}
 
-var _VideoSource_index = [...]uint8{0, 7, 14, 21, 28, 35, 42, 49, 56, 63, 71, 79, 87, 95, 103, 111, 119, 127, 135, 143, 151}
+const _VideoSource_name = "Input_1Input_2Input_3Input_4Input_5Input_6Input_7Input_8Input_9Input_10Input_11Input_12Input_13Input_14Input_15Input_16Input_17Input_18Input_19Input_20Input_21Input_22Input_23Input_24Input_25Input_26Input_27Input_28Input_29Input_30Input_31Input_32Input_33Input_34Input_35Input_36Input_37Input_38Input_39"
+
+var _VideoSource_index = [...]uint16{0, 7, 14, 21, 28, 35, 42, 49, 56, 63, 71, 79, 87, 95, 103, 111, 119, 127, 135, 143, 151, 159, 167, 175, 183, 191, 199, 207, 215, 223, 231, 239, 247, 255, 263, 271, 279, 287, 295, 303}
 
 func (i VideoSource) String() string {
 	if i >= VideoSource(len(_VideoSource_index)-1) {
-		return fmt.Sprintf("VideoSource(%d)", i)
+		return "VideoSource(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
 	return _VideoSource_name[_VideoSource_index[i]:_VideoSource_index[i+1]]
 }

@@ -61,6 +61,25 @@ const (
 	Input_18
 	Input_19
 	Input_20
+	Input_21
+	Input_22
+	Input_23
+	Input_24
+	Input_25
+	Input_26
+	Input_27
+	Input_28
+	Input_29
+	Input_30
+	Input_31
+	Input_32
+	Input_33
+	Input_34
+	Input_35
+	Input_36
+	Input_37
+	Input_38
+	Input_39
 )
 
 func (c *AtemClient) parseTallyByIndex(payload []byte) {
