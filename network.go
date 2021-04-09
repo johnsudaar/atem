@@ -58,7 +58,7 @@ func (c *AtemClient) listenSocketLoop(ctx context.Context) {
 
 func (c *AtemClient) listenSocket() error {
 	// TODO: Better error handling
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 10*1024*1024)
 	n, err := c.conn.Read(buffer)
 	if err != nil {
 		return errors.Wrap(err, "fail to read socket")
