@@ -64,7 +64,7 @@ func (c *AtemClient) listenSocket() error {
 		return errors.Wrap(err, "fail to read socket")
 	}
 	packet := buffer[0:n]
-	header := new(header)
+	header := new(Header)
 	err = header.UnmarshalBinary(packet)
 	if err != nil {
 		return errors.Wrap(err, "fail to unmarshal packet")

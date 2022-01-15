@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-type header struct {
+type Header struct {
 	BitMask     uint16
 	PayloadSize uint16
 	UID         uint16
@@ -14,7 +14,7 @@ type header struct {
 	PackageID   uint16
 }
 
-func (h *header) UnmarshalBinary(data []byte) error {
+func (h *Header) UnmarshalBinary(data []byte) error {
 	if uint16(len(data)) < HeaderSize {
 		return fmt.Errorf("Invalid header size: %v shout be >= %v", len(data), HeaderSize)
 	}
@@ -28,7 +28,7 @@ func (h *header) UnmarshalBinary(data []byte) error {
 	return nil
 }
 
-func (h *header) MarshalBinary() (data []byte, err error) {
+func (h *Header) MarshalBinary() (data []byte, err error) {
 	val := uint16(h.BitMask << 11)
 	val |= (h.PayloadSize + HeaderSize)
 
@@ -53,7 +53,7 @@ func (c *AtemClient) commandHeader(bitmask, payloadSize, ackID uint16, useRemote
 		c.localPacketCounter++
 	}
 
-	h := &header{
+	h := &Header{
 		BitMask:     bitmask,
 		PayloadSize: payloadSize,
 		UID:         c.currentUid,
