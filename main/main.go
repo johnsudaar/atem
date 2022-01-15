@@ -16,7 +16,7 @@ func (writer) WriteTally(st atem.TallyStatuses) {
 
 func main() {
 	fmt.Println("Connect !")
-	client, err := atem.New(context.Background(), "192.168.1.57:9910",
+	client, err := atem.New(context.Background(), "127.0.0.1:9910",
 		atem.WithTallyWriter(writer{}),
 	)
 	if err != nil {
